@@ -24,7 +24,6 @@ def api_gainers():
         'crypto': crypto.gainers,
         'stocks': screener.stocks_gainers,
         'forex': screener.forex_gainers,
-        'commodities': screener.commodities_gainers,
         'cfd': screener.cfd_gainers,
     }
 
@@ -44,7 +43,6 @@ def api_losers():
         'crypto': crypto.losers,
         'stocks': screener.stocks_losers,
         'forex': screener.forex_losers,
-        'commodities': screener.commodities_losers,
         'cfd': screener.cfd_losers,
     }
 
@@ -64,7 +62,6 @@ def api_most_active():
         'crypto': crypto.most_active,
         'stocks': screener.stocks_most_active,
         'forex': screener.forex_most_active,
-        'commodities': screener.commodities_most_active,
         'cfd': screener.cfd_most_active,
     }
 

@@ -97,7 +97,6 @@ const MARKETS = [
   { id: 'crypto', label: 'Crypto' },
   { id: 'stocks', label: 'Stocks USA' },
   { id: 'forex', label: 'Forex' },
-  { id: 'commodities', label: 'Commodities' },
   { id: 'cfd', label: 'CFD' },
   { id: 'funding', label: 'Funding Rates' },
 ];
@@ -165,7 +164,7 @@ function refreshMarket(market) {
   }
   fetchAndRender(market, 'gainers');
   fetchAndRender(market, 'losers');
-  fetchAndRender(market, 'active');
+  fetchAndRender(market, 'most_active');
 }
 
 function fmtChange(val) {
