@@ -51,6 +51,10 @@ def get_all() -> dict[str, list[dict]]:
     binance = _get_binance()
     bybit = _get_bybit()
 
+    now_ms = int(__import__('time').time() * 1000)
+    for r in binance + bybit:
+        r['timeToNextFunding'] = max(0, r['nextFundingTime'] - now_ms)
+
     all_rates = sorted(binance + bybit, key=lambda x: x['fundingRate'], reverse=True)
 
     positives = [r for r in all_rates if r['fundingRate'] > 0][:10]

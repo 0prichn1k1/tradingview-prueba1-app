@@ -124,6 +124,10 @@ function init() {
           <div><div class="section-title">Top Positive Funding</div><div id="funding-positive" class="loading">Cargando...</div></div>
           <div><div class="section-title">Top Negative Funding</div><div id="funding-negative" class="loading">Cargando...</div></div>
         </div>
+        <div class="grid">
+          <div><div class="section-title">Top Positive to Close</div><div id="funding-positive-close" class="loading">Cargando...</div></div>
+          <div><div class="section-title">Top Negative to Close</div><div id="funding-negative-close" class="loading">Cargando...</div></div>
+        </div>
       `;
     } else {
       div.innerHTML = `
@@ -132,7 +136,7 @@ function init() {
           <div><div class="section-title">Top Losers</div><div id="${m.id}-losers" class="loading">Cargando...</div></div>
         </div>
         <div class="section-title" style="margin-top:8px">Most Active</div>
-        <div id="${m.id}-active" class="loading">Cargando...</div>
+        <div id="${m.id}-most_active" class="loading">Cargando...</div>
       `;
     }
 
@@ -202,6 +206,15 @@ function fmtTime(ts) {
   return d.toLocaleTimeString();
 }
 
+function fmtTimeRemaining(ms) {
+  if (!ms || ms <= 0) return '—';
+  const totalMin = Math.floor(ms / 60000);
+  const hours = Math.floor(totalMin / 60);
+  const mins = totalMin % 60;
+  if (hours > 0) return hours + 'h ' + mins + 'm';
+  return mins + 'm';
+}
+
 function buildTable(data, columns) {
   if (!data || data.length === 0) return '<span class="error">Sin datos</span>';
   let html = '<table><thead><tr>';
@@ -227,6 +240,8 @@ function buildTable(data, columns) {
         html += '<td class="funding-exch">' + (val || '—') + '</td>';
       } else if (c.type === 'time') {
         html += '<td class="volume">' + fmtTime(val) + '</td>';
+      } else if (c.type === 'timeremaining') {
+        html += '<td class="volume">' + fmtTimeRemaining(val) + '</td>';
       } else {
         html += '<td>' + (val || '—') + '</td>';
       }
@@ -257,28 +272,31 @@ async function fetchAndRender(market, type) {
 }
 
 async function fetchFunding() {
-  const posEl = document.getElementById('funding-positive');
-  const negEl = document.getElementById('funding-negative');
-  if (!posEl || !negEl) return;
+  const ids = ['funding-positive', 'funding-negative', 'funding-positive-close', 'funding-negative-close'];
+  const els = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
+  if (!els['funding-positive'] || !els['funding-negative']) return;
   try {
     const r = await fetch('/api/funding_rates');
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
-    posEl.innerHTML = buildTable(data.positive, [
+    const cols = [
       { key: 'symbol', label: 'Símbolo', type: 'symbol' },
       { key: 'exchange', label: 'Exchange', type: 'exchange' },
       { key: 'fundingRate', label: 'Funding Rate', type: 'funding' },
       { key: 'nextFundingTime', label: 'Próximo Funding', type: 'time' },
-    ]);
-    negEl.innerHTML = buildTable(data.negative, [
+    ];
+    els['funding-positive'].innerHTML = buildTable(data.positive, cols);
+    els['funding-negative'].innerHTML = buildTable(data.negative, cols);
+    const closeCols = [
       { key: 'symbol', label: 'Símbolo', type: 'symbol' },
       { key: 'exchange', label: 'Exchange', type: 'exchange' },
-      { key: 'fundingRate', label: 'Funding Rate', type: 'funding' },
-      { key: 'nextFundingTime', label: 'Próximo Funding', type: 'time' },
-    ]);
+      { key: 'fundingRate', label: 'Rate Actual', type: 'funding' },
+      { key: 'timeToNextFunding', label: 'Tiempo Restante', type: 'timeremaining' },
+    ];
+    els['funding-positive-close'].innerHTML = buildTable(data.positive, closeCols);
+    els['funding-negative-close'].innerHTML = buildTable(data.negative, closeCols);
   } catch (e) {
-    posEl.innerHTML = '<span class="error">Error: ' + e.message + '</span>';
-    negEl.innerHTML = '';
+    ids.forEach(id => { if (els[id]) els[id].innerHTML = '<span class="error">Error: ' + e.message + '</span>'; });
   }
 }
 

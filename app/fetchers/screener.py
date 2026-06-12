@@ -3,6 +3,10 @@ from tradingview_screener import Query, col, forex, cfd
 COLUMNS = ['name', 'close', 'change', 'volume', 'market_cap_basic']
 
 
+def _clean(df):
+    return df.replace([float('inf'), float('-inf')], None).fillna(0).infer_objects(copy=False)
+
+
 def _fetch_stocks(limit: int = 10, order_by: str = 'change', ascending: bool = False) -> list[dict]:
     try:
         count, df = (
@@ -13,7 +17,7 @@ def _fetch_stocks(limit: int = 10, order_by: str = 'change', ascending: bool = F
             .limit(limit)
             .get_scanner_data()
         )
-        return df.to_dict(orient='records')
+        return _clean(df).to_dict(orient='records')
     except Exception:
         return []
 
@@ -40,7 +44,7 @@ def _fetch_forex(limit: int = 10, order_by: str = 'change', ascending: bool = Fa
             .limit(limit)
             .get_scanner_data()
         )
-        return df.to_dict(orient='records')
+        return _clean(df).to_dict(orient='records')
     except Exception:
         return []
 
@@ -66,7 +70,7 @@ def _fetch_cfd(limit: int = 10, order_by: str = 'change', ascending: bool = Fals
             .limit(limit)
             .get_scanner_data()
         )
-        return df.to_dict(orient='records')
+        return _clean(df).to_dict(orient='records')
     except Exception:
         return []
 
